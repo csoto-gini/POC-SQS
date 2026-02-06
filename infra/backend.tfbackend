@@ -1,0 +1,9 @@
+# Backend configuration for Terraform state
+# This file is used with: terraform init -backend-config=backend.tfbackend
+
+bucket         = "gini-dev-directive-tf-state"
+key            = "tf-infra/rooms-poc/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "gini-dev-tf-state-locking"
+encrypt        = true
+
