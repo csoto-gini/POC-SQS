@@ -1,23 +1,11 @@
-# Node modules
 backend/node_modules/
-backend/node_modules
-
-# Environment variables (IMPORTANTE - no subir credenciales)
 backend/.env
 .env
-
-# Terraform state (contiene info sensible)
 infra/.terraform/
 infra/.terraform.lock.hcl
 infra/terraform.tfstate
 infra/terraform.tfstate.backup
-infra/.terraform.tfstate.lock.info
 infra/tfplan
-
-# Build outputs
 backend/dist/
-backend/build/
-
-# OS files
 .DS_Store
 *.log

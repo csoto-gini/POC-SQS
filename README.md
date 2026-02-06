@@ -1,90 +1,87 @@
-# 🚀 Rooms POC - Arquitectura Event-Driven
+# Rooms POC - Event-Driven Architecture
 
-Prueba de concepto completa para arquitectura serverless con AWS.
+Complete proof of concept for serverless architecture with AWS.
 
-**Arquitectura**: `API → SQS → EventBridge → Lambda`
+**Architecture**: API → SQS → EventBridge → Lambda
 
-## 📁 Estructura del Proyecto
+## Project Structure
 
 ```
 rooms-poc/
-├── backend/              # Backend NestJS
+├── backend/              # NestJS Backend
 │   ├── src/
 │   ├── package.json
 │   └── .env
-├── infra/                # Infraestructura AWS (Terraform)
+├── infra/                # AWS Infrastructure (Terraform)
 │   ├── lambda/
 │   ├── *.tf
 │   ├── deploy.sh
 │   └── destroy.sh
-├── README.md             # Este archivo
-└── DEPLOY.md             # Guía de despliegue
+├── README.md             # This file
+└── DEPLOY.md             # Deployment guide
 ```
 
-## ⚡ Inicio Rápido
+## Quick Start
 
-### 1️⃣ Instalar Dependencias del Backend
+### 1. Install Backend Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-### 2️⃣ Configurar Credenciales
+### 2. Configure Credentials
 
-Crea el archivo `backend/.env`:
+Create the `backend/.env` file:
 
 ```bash
 PORT=3001
 NODE_ENV=development
 
-# Tus credenciales AWS
+# Your AWS credentials
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=tu_access_key
-AWS_SECRET_ACCESS_KEY=tu_secret_key
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 
-# Este lo llenaremos después
+# We'll fill this after deployment
 ROOMS_QUEUE_URL=
 ```
 
-### 3️⃣ Desplegar Infraestructura
+### 3. Deploy Infrastructure
 
 ```bash
 cd infra
 
-# Exportar credenciales para Terraform
-export AWS_ACCESS_KEY_ID=tu_access_key
-export AWS_SECRET_ACCESS_KEY=tu_secret_key
+# Export credentials for Terraform
+export AWS_ACCESS_KEY_ID=your_access_key
+export AWS_SECRET_ACCESS_KEY=your_secret_key
 
 # Deploy
 ./deploy.sh
 ```
 
-### 4️⃣ Copiar Queue URL
+### 4. Copy Queue URL
 
 ```bash
-# Obtener el Queue URL
+# Get the Queue URL
 cd infra
 terraform output sqs_queue_url
 
-# Copiar el resultado a backend/.env
-# ROOMS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/...
+# Copy the result to backend/.env
 ```
 
-### 5️⃣ Iniciar Backend
+### 5. Start Backend
 
 ```bash
 cd backend
 npm run start:dev
 ```
 
-Verás:
-```
-🚀 Server is running on: http://localhost:3001
-📚 Swagger documentation: http://localhost:3001/api
-```
+Server will be running on: http://localhost:3001
 
-### 6️⃣ Probar
+Swagger documentation: http://localhost:3001/api
+
+### 6. Test
 
 ```bash
 curl -X POST http://localhost:3001/rooms/message \
@@ -92,84 +89,114 @@ curl -X POST http://localhost:3001/rooms/message \
   -d '{
     "email1": "test1@example.com",
     "email2": "test2@example.com",
-    "roomId": "sala-test-123"
+    "roomId": "test-room-123"
   }'
 ```
 
-### 7️⃣ Verificar Logs
+### 7. Verify Logs
 
 ```bash
 aws logs tail /aws/lambda/gini-dev-rooms-processor --follow
 ```
 
-## 📊 Arquitectura
+## Architecture Flow
 
 ```
-Cliente
-  ↓
+Client Request
+    ↓
 POST /rooms/message (NestJS Backend)
-  ↓
-Amazon SQS (Cola de mensajes)
-  ↓
-EventBridge Pipe (Conexión automática)
-  ↓
-EventBridge Event Bus (Ruteo de eventos)
-  ↓
-AWS Lambda (Procesamiento)
-  ↓
-CloudWatch Logs (Registros)
+    ↓
+Amazon SQS (Message Queue)
+    ↓
+EventBridge Pipe (Automatic connection)
+    ↓
+EventBridge Event Bus (Event routing)
+    ↓
+AWS Lambda (Processing)
+    ↓
+CloudWatch Logs (Storage)
 ```
 
-## 🔑 Recursos AWS Creados
+## AWS Resources Created
 
 - **SQS Queue**: gini-dev-rooms-queue
-- **SQS DLQ**: gini-dev-rooms-dlq
+- **SQS DLQ**: gini-dev-rooms-dlq (Dead Letter Queue)
 - **Event Bus**: gini-dev-rooms-event-bus
 - **EventBridge Pipe**: gini-dev-rooms-pipe
-- **Lambda**: gini-dev-rooms-processor
-- **IAM Roles**: Permisos necesarios
+- **Lambda Function**: gini-dev-rooms-processor
+- **IAM Roles**: Required permissions for all services
 - **CloudWatch Logs**: /aws/lambda/gini-dev-rooms-processor
 
-## 🧹 Limpiar Recursos
+## Technology Stack
+
+**Backend**
+- NestJS
+- TypeScript
+- AWS SDK for JavaScript (v3)
+- Class Validator
+
+**Infrastructure**
+- Terraform
+- AWS SQS
+- AWS EventBridge
+- AWS Lambda
+- AWS CloudWatch
+
+## Clean Up
+
+To destroy all AWS resources:
 
 ```bash
 cd infra
 ./destroy.sh
 ```
 
-## 💰 Costos
+## Cost
 
-Todo dentro del Free Tier de AWS = **$0.00** ✅
+All resources are within AWS Free Tier: **$0.00**
 
-## 📚 Documentación
+## Documentation
 
-- **README.md** (este archivo) - Inicio rápido
-- **DEPLOY.md** - Guía detallada de despliegue
-- **backend/README.md** - Documentación del backend
-- **infra/README.md** - Documentación de infraestructura
+- **README.md** - This file (Quick start)
+- **DEPLOY.md** - Detailed deployment guide
+- **backend/README.md** - Backend documentation
+- **infra/README.md** - Infrastructure documentation
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **Error: "ROOMS_QUEUE_URL is not defined"**
-- Verifica que `backend/.env` tenga la variable
 
-**Lambda no se ejecuta**
-- Revisa CloudWatch Logs
-- Verifica que el EventBridge Pipe esté activo
+Check that `backend/.env` has the variable correctly set.
 
-**Puerto 3001 en uso**
-- Cambia `PORT` en `backend/.env`
+**Lambda doesn't execute**
 
-## 📞 Soporte
+- Check CloudWatch Logs at `/aws/lambda/gini-dev-rooms-processor`
+- Verify that EventBridge Pipe is in RUNNING state
+- Check IAM permissions
 
-¿Problemas? Revisa:
-1. Los logs de CloudWatch
-2. Que todas las credenciales estén correctas
-3. Que Terraform haya desplegado sin errores
+**Port 3001 in use**
 
----
+Change `PORT` in `backend/.env` to another port.
 
-**¡Listo para empezar!** 🎉
+**Invalid AWS credentials**
 
-Sigue los pasos del 1️⃣ al 7️⃣ y en 10 minutos tendrás todo funcionando.
+- Verify credentials are correct
+- If using temporary credentials, ensure they haven't expired
+- Check that `AWS_SESSION_TOKEN` is set if using temporary credentials
 
+## Support
+
+Having issues? Check:
+
+1. CloudWatch logs for detailed error messages
+2. That all AWS credentials are correct and not expired
+3. That Terraform deployed without errors
+4. SQS queue metrics in AWS Console
+
+## License
+
+ISC
+
+## Author
+
+GINI - Global Interpreting Network Inc
